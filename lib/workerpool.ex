@@ -2,23 +2,30 @@ defmodule Workerpool do
   use Application
 
   def start(_type, _args) do
-    pool_config = [mfa: {Workerpool.Worker, :start_link, []}, size: 5]
-    start_pool(pool_config)
+    pools_config = [
+      [name: "Pool1",
+       mfa: {SampleWorker, :start_link, []}, size: 2],
+      [name: "Pool2",
+       mfa: {SampleWorker, :start_link, []}, size: 3],
+      [name: "Pool3",
+       mfa: {SampleWorker, :start_link, []}, size: 4],
+    ]
+    start_pools(pools_config)
   end
 
-  def start_pool(pool_config) do
-    Workerpool.Supervisor.start_link(pool_config)
+  def start_pools(pools_config) do
+    Workerpool.Supervisor.start_link(pools_config)
   end
 
-  def checkout do
-    Workerpool.Server.checkout
+  def checkout(pool_name) do
+    Workerpool.Server.checkout(pool_name)
   end
 
-  def checkin(worker_pid) do
-    Workerpool.Server.checkin(worker_pid)
+  def checkin(pool_name, worker_pid) do
+    Workerpool.Server.checkin(pool_name, worker_pid)
   end
 
-  def status do
-    Workerpool.Server.status
+  def status(pool_name) do
+    Workerpool.Server.status(pool_name)
   end
 end

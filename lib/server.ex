@@ -5,7 +5,7 @@ defmodule Workerpool.Server do
   defstruct sup: nil, worker_sup: nil, size: nil, workers: nil, mfa: nil
 
   defmodule State do
-    defstruct sup: nil, size: nil, mfa: nil
+    defstruct sup: nil, size: nil, mfa: nil, monitors: nil, worker_sup: nil, workers: nil
   end
 
   # API
@@ -67,6 +67,10 @@ defmodule Workerpool.Server do
     end
   end
 
+  def handle_call(:status, _from, %{workers: workers, monitors: monitors} = state) do
+    {:reply, {length(workers), :ets.info(monitors, :size)}, state}
+  end
+
   def handle_cast({:checkin, worker}, %{workers: workers, monitors: monitors} = state) do
     case :ets.lookup(monitors, worker) do
       [{pid, ref}] ->
@@ -76,10 +80,6 @@ defmodule Workerpool.Server do
       [] ->
         {:noreply, state}
     end
-  end
-
-  def handle_call(:status, _from, %{workers: workers, monitors: monitors} = state) do
-    {:reply, {length(workers), :ets.info(monitors, :size)}, state}
   end
 
   # Private
